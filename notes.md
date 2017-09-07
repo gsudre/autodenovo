@@ -37,6 +37,6 @@ On the SNP chip front, I plan to stick with PennCNV, which has its own algorithm
 
 For SNPs/INDELS, I'll use multiple callers implemented in bcbio-gen, but I'm not sure yet whether it's a good idea to call them individually, or do some sort of joint/population call. If the latter, should we do it within families, or across all samples?
 
-We can use finally trioDenovo or polymutt in the bcbio-nextgen results.
+We can use finally trioDenovo or polymutt in the bcbio-nextgen results. This (http://www.pitt.edu/~wec47/famldcaller.html) is also an option, if we have enough families.
 
 The final goal is to annotate the variants obtained in the 3 arms, and compare them to public (SV?) databases (dbVar, ClinVar).
