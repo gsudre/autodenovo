@@ -40,3 +40,13 @@ For SNPs/INDELS, I'll use multiple callers implemented in bcbio-gen, but I'm not
 We can use finally trioDenovo or polymutt in the bcbio-nextgen results. This (http://www.pitt.edu/~wec47/famldcaller.html) is also an option, if we have enough families.
 
 The final goal is to annotate the variants obtained in the 3 arms, and compare them to public (SV?) databases (dbVar, ClinVar).
+
+----
+
+I created the first project using:
+
+```
+bcbio_nextgen.py -w template gatk-variant gatk_unique_and_population
+```
+
+and then changed the template to accomodate the new reference, and do multicalling, as well as single calling.
