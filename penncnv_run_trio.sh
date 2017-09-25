@@ -4,12 +4,14 @@ root_dir='/data/NCR_SBRB/big_fake_simplex'
 out_dir="${root_dir}/penncnv"
 trio=$1
 ped_fname="${root_dir}/${trio}.ped"
-nlines=`cat $ped | wc -l`
+nlines=`cat ${ped_fname} | wc -l`
 
 if [ $nlines != 3 ]; then
 	echo Pedigree file for trio needs to have exactly 3 lines! Exitting...
 	return -1;
 fi
+
+cd $out_dir
 
 while read line; do
         IFS="	" read -r -a array <<< "$line";
