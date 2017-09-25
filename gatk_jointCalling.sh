@@ -28,7 +28,7 @@ v_str=''
 while read id; do
 	v_str=$v_str" -V ${id}/${id}.g.vcf"
 done < $bam_list
-GATK -m ${gatk_memory} GenotypeGVCFs -R ${ref_fa} ${v_str} -o joint.vcf
+GATK -m ${gatk_memory} GenotypeGVCFs -R ${ref_fa} ${v_str} -o joint.vcf -nt $SLURM_CPUS_PER_TASK
 
 ################################################
 ###VQSR (Variant Quality Score Recalibration)###
