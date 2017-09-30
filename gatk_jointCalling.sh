@@ -38,7 +38,6 @@ cd ${vcf_directory}
 GATK -m ${gatk_memory} VariantRecalibrator -R ${ref_fa} -input joint.vcf \
 	-recalFile recalibrate_SNP.recal -tranchesFile recalibrate_SNP.tranches \
 	-rscriptFile recalibrate_SNP_plots.R -nt $SLURM_CPUS_PER_TASK \
-	# SNP recommendations
 	-resource:hapmap,known=false,training=true,truth=true,prior=15.0 ${gatk_files}/hapmap_3.3.hg19.vcf.gz \
    	-resource:omni,known=false,training=true,truth=true,prior=12.0 ${gatk_files}/1000G_omni2.5.hg19.vcf.gz \
    	-resource:1000G,known=false,training=true,truth=false,prior=10.0 ${gatk_files}/1000G_phase1.snps.high_confidence.hg19.vcf.gz \
@@ -54,9 +53,8 @@ GATK -m ${gatk_memory} ApplyRecalibration -R ${ref_fa} -input joint.vcf -mode SN
 #Step3: Build INDEL recalibration model
 GATK -m ${gatk_memory} VariantRecalibrator -R ${ref_fa} -input recalibrated_snps_raw_indels.vcf \
 	-recalFile recalibrate_INDEL.recal -tranchesFile recalibrate_INDEL.tranches -rscriptFile recalibrate_INDEL_plots.R \
-	# INDEL recommendations
 	--maxGaussians 4 \
-   	-resource:mills,known=false,training=true,truth=true,prior=12.0 ${gatk_files}/Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.gz \
+   	-resource:mills,known=false,training=true,truth=true,prior=12.0 ${gatk_files}/Mills_and_1000G_gold_standard.indels.hg19.vcf.gz \
    	-resource:dbsnp,known=true,training=false,truth=false,prior=2.0 ${gatk_files}/dbsnp_138.hg19.vcf.gz \
    	-an QD -an DP -an FS -an SOR -an ReadPosRankSum -an MQRankSum -an InbreedingCoeff \
    	-mode INDEL \
