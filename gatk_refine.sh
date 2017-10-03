@@ -30,4 +30,4 @@ GATK -m ${gatk_memory} CalculateGenotypePosteriors -R ${ref_fa} --supporting ${h
 GATK -m ${gatk_memory} VariantFiltration -R ${ref_fa} -V recalibrated_variants.${trio_name}.vcf -G_filter "GQ < 20.0" -G_filterName lowGQ -o recalibrated_variants.${trio_name}.Gfiltered.vcf
 
 # Step 3: Annotate possible de novo mutations
-GATK -m ${gatk_memory} VariantAnnotator -R ${ref_fa} -V recalibrated_variants.${trio_name}.Gfiltered.vcf -A PossibleDeNovo -ped ${trio_fname} -o recalibrated_variants.${trio_fname}.Gfiltered.deNovos.vcf
+GATK -m ${gatk_memory} VariantAnnotator -R ${ref_fa} -V recalibrated_variants.${trio_name}.Gfiltered.vcf -A PossibleDeNovo -ped ${trio_fname} -pedValidationType SILENT -o recalibrated_variants.${trio_name}.Gfiltered.deNovos.vcf
