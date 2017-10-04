@@ -30,7 +30,7 @@ The end result of each analysis arm is a file containing de-novo mutations for e
 
 The SNP Chip pipeline can be run in paralle with the other two, but SNV and CNV need the files from GATK Best Practices pipeline. So, we'll start by running that.
 
-1. Modify the script gatk_upToSingleCalls.sh to reflect your environment. 
+### 1. Modify the script gatk_upToSingleCalls.sh to reflect your environment. 
 
 This script runs the GATK pipeline up to calls for the single sample. It takes the sample name, assuming all variables are properly set. I highly recommend running it in a computer cluster. In my case, we have a cluster running SLURM, so I swarm the jobs this way:
 
