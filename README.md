@@ -4,7 +4,7 @@ The goal in this project is to construct a pipeline for finding denovo mutations
 
 The end goal is to compare annotated variants to public databases (dbVar, ClinVar), possibly indicating further sequencing or mechanistic avenues.
 
-This is an ongoing project, and I've been journaling about my experiences in this project's GitHub [wiki](https://github.com/gsudre/autodenovo/wiki).
+This is an ongoing project, and I've been journaling about my experiences in this project's GitHub [wiki](https://github.com/gsudre/autodenovo/wiki/AutoDenovo-Wiki).
 
 ## Graphical Overview
 ![Flowchart](main_flow.png "MainFlow")
