@@ -16,9 +16,9 @@ ref_fa="/fdb/igenomes/Homo_sapiens/UCSC/hg19/Sequence/WholeGenomeFasta/genome.fa
 hg19_known_snps="/fdb/GATK_resource_bundle/hg19/dbsnp_138.hg19.vcf.gz"
 hg19_known_indels="/fdb/GATK_resource_bundle/hg19/1000G_phase1.indels.hg19.vcf.gz"
 
-home_directory="/data/NCR_SBRB/big_fake_simplex"
+home_directory="/data/NCR_SBRB/simplex"
 fastq_directory="${home_directory}/FASTQ"
-nisc_bam_directory="/data/NCR_SBRB/NISC/SampleBams"
+nisc_bam_directory="${home_directory}/original_bams"
 qc_top_directory="${home_directory}/QC"
 qc_this_sample_directory="${qc_top_directory}/${id}"
 qc_this_sample_R1_directory="${qc_this_sample_directory}/R1"
