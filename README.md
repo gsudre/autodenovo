@@ -25,3 +25,19 @@ The end result of each analysis arm is a file containing de-novo mutations for e
 * If affected and unnafected trios come from the same family, this variant comparison can be performed within family first, before checking across families.
 * The parameters specific to each caller can be tweaked to increase/decrease sensitivity and specificity, and hence obtain more/less variants in the final consensus call of each arm.
 * Compare annotated variants to public databases, possibly indicating further sequencing or mechanistic avenues.
+
+## Usage
+
+The SNP Chip pipeline can be run in paralle with the other two, but SNV and CNV need the files from GATK Best Practices pipeline. So, we'll start by running that.
+
+1. Modify the script gatk_upToSingleCalls.sh to reflect your environment. 
+
+This script runs the GATK pipeline up to calls for the single sample. It takes the sample name, assuming all variables are properly set. I highly recommend running it in a computer cluster. In my case, we have a cluster running SLURM, so I swarm the jobs this way:
+
+```bash
+while read s; do echo "bash ~/autodenovo/gatk_upToSingleCalls.sh $s" >> swarm.single; done < sample_ids.txt
+swarm -f swarm.single -t 16 -g 55 --job-name gatk_single --logdir trash --time=48:00:00 --gres=lscratch:100
+```
+
+where sample_ids.txt is a file with one sample name per line. This should take about 1-2 days to run per participant, so ther'es the beauty of running them all in parallel.
+
