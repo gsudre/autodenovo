@@ -100,3 +100,7 @@ end
 ```
 
 Assuming that all our trios have been coded as FAMID_trioX.ped, as above.
+
+#### 3. Parse de novo CNVs
+
+The last step is to figure out which CNVs are de novo in each trio.
