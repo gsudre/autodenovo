@@ -30,9 +30,11 @@ The end result of each analysis arm is a file containing de-novo mutations for e
 
 The SNP Chip pipeline can be run in paralle with the other two, but SNV and CNV need the files from GATK Best Practices pipeline. So, we'll start by running that.
 
-### 1. Modify the script gatk_upToSingleCalls.sh to reflect your environment. 
+### CNV and SNV arms
 
-This script runs the GATK pipeline up to calls for the single sample. It takes the sample name, assuming all variables are properly set. I highly recommend running it in a computer cluster. In my case, we have a cluster running SLURM, so I swarm the jobs this way:
+#### 1. Run GATK pipeline script to do variant calling for single samples
+
+First, modify the script gatk_upToSingleCalls.sh to reflect your environment. This script runs the GATK pipeline up to calls for the single sample. It takes the sample name, assuming all variables are properly set. I highly recommend running it in a computer cluster. In my case, we have a cluster running SLURM, so I swarm the jobs this way:
 
 ```bash
 while read s; do echo "bash ~/autodenovo/gatk_upToSingleCalls.sh $s" >> swarm.single; done < sample_ids.txt
@@ -41,3 +43,8 @@ swarm -f swarm.single -t 16 -g 55 --job-name gatk_single --logdir trash --time=4
 
 where sample_ids.txt is a file with one sample name per line. This should take about 1-2 days to run per participant, so ther'es the beauty of running them all in parallel.
 
+### SNP Chip arm
+
+As the SNP chip arm doesn't depend on the exome data, let's run it while we wait for the GATK pipeline results. I __strongly__ advise you to look at the [PennCNV documentation](http://penncnv.openbioinformatics.org/en/latest/user-guide/input/) to figure out how to prepare your input files. 
+
+In my case, we used Illumina's InfiniumExome-24_v1.0 chips. So, I used GenomeStudio (free to [download](https://support.illumina.com/array/array_software/genomestudio/downloads.html), but it does require Windows) to export a Final Report with the columns we need. 
