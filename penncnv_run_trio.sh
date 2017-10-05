@@ -1,8 +1,10 @@
 #~/bin/bash
 # Runs all samples in a pedigree file in the correct order
-root_dir='/data/NCR_SBRB/big_fake_simplex'
+root_dir='/data/NCR_SBRB/simplex'
 out_dir="${root_dir}/penncnv"
 trio=$1
+pfb_file=$2
+gc_file=$3
 ped_fname="${root_dir}/${trio}.ped"
 nlines=`cat ${ped_fname} | wc -l`
 
@@ -21,7 +23,7 @@ while read line; do
 	sex=${array[4]}
 
 	# figure out which box has the sample
-        spath=`ls fs_c*/* | grep ${id}`;
+        spath=`ls *Exome/* | grep ${id}`;
         IFS='/' read -r -a array <<< "$spath";
         box=${array[0]};
 
@@ -42,8 +44,8 @@ echo Found father=$father mother=$mother child=$child
 module load penncnv
 
 cd $out_dir
-detect_cnv.pl -test -hmm example.hmm -pfb filtered_MAF.pfb -log ${trio}.log $father $mother $child -out ${trio}.rawcnv;
-detect_cnv.pl -test -hmm example.hmm -pfb filtered_MAF.pfb -log ${trio}.log $father $mother $child -out ${trio}.adjusted.rawcnv -gcmodel filtered.h19.gcmodel;
-detect_cnv.pl -trio -hmm example.hmm -pfb filtered_MAF.pfb -cnv ${trio}.rawcnv $father $mother $child -out ${trio}.triocnv;
-detect_cnv.pl -trio -hmm example.hmm -pfb filtered_MAF.pfb -cnv ${trio}.adjusted.rawcnv $father $mother $child -out ${trio}.adjusted.triocnv;
+detect_cnv.pl -test -hmm ~/autodenovo/penncnv_example.hmm -pfb $pfb_file -log results/${trio}.log $father $mother $child -out results/${trio}.rawcnv;
+detect_cnv.pl -test -hmm ~/autodenovo/penncnv_example.hmm -pfb $pfb_file -log results/${trio}.log $father $mother $child -out results/${trio}.adjusted.rawcnv -gcmodel $gc_file;
+detect_cnv.pl -trio -hmm ~/autodenovo/penncnv_example.hmm -pfb $pfb_file -cnv results/${trio}.rawcnv $father $mother $child -out results/${trio}.triocnv;
+detect_cnv.pl -trio -hmm ~/autodenovo/penncnv_example.hmm -pfb $pfb_file -cnv results/${trio}.adjusted.rawcnv $father $mother $child -out results/${trio}.adjusted.triocnv;
 
