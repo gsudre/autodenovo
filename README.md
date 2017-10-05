@@ -28,6 +28,8 @@ The end result of each analysis arm is a file containing de-novo mutations for e
 
 ## Usage
 
+The one thing all arms will need is one .ped file for each trio. I like the convention FAMID_trioX.ped, and always making the trio with the affected child trio1. So, for example, 9005_trio1.ped and 9005_trio2.ped represent 4 people. The parents are the same in both pedigrees, and the child in 9005_trio1.ped is affected. For details on the .ped file, please see [this](http://csg.sph.umich.edu/abecasis/merlin/tour/input_files.html). All pedigree files should be headless.
+
 The SNP Chip pipeline can be run in paralle with the other two, but SNV and CNV need the files from GATK Best Practices pipeline. So, we'll start by running that.
 
 ### CNV and SNV arms
@@ -41,7 +43,7 @@ while read s; do echo "bash ~/autodenovo/gatk_upToSingleCalls.sh $s" >> swarm.si
 swarm -f swarm.single -t 16 -g 55 --job-name gatk_single --logdir trash --time=48:00:00 --gres=lscratch:100
 ```
 
-where sample_ids.txt is a file with one sample name per line. This should take about 1-2 days to run per participant, so ther'es the beauty of running them all in parallel.
+where sample_ids.txt is a file with one sample name per line. This should take about 1-2 days to run per participant, so there's the beauty of running them all in parallel.
 
 ### SNP Chip arm
 
@@ -82,3 +84,19 @@ I'm going to use the default HMM parameters, but feel free to play with them if 
 bash ~/autodenovo/penncnv_create_gcmodel.sh HumanExome.pfb /fdb/igenomes/Homo_sapiens/UCSC/hg19/Sequence/WholeGenomeFasta/genome.fa HumanExome.h19.gcmodel
 bash ~/autodenovo/penncnv_create_gcmodel.sh InfiniumExome.pfb /fdb/igenomes/Homo_sapiens/UCSC/hg19/Sequence/WholeGenomeFasta/genome.fa InfiniumExome.h19.gcmodel
 ```
+
+#### 2. Run PennCNV
+
+Now that all files are ready, there's a handy script to run PennCNV to find denovo mutations. Because it runs quite quickly, we can loop around it for all our trio pedigrees:
+
+```bash
+for t in `ls -1 *trio*ped | sed -e 's/\.ped//'`; do 
+   bash ~/autodenovo/penncnv_run_trio.sh $t InfiniumExome.pfb InfiniumExome.hg19.gcmodel;
+done
+# redo it for the sample in a different box
+for t in `ls -1 10369_trio*ped | sed -e 's/\.ped//'`; do 
+   bash ~/autodenovo/penncnv_run_trio.sh $t HumanExome.pfb HumanExome.hg19.gcmodel;
+end
+```
+
+Assuming that all our trios have been coded as FAMID_trioX.ped, as above.
