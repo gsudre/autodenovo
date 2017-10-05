@@ -45,7 +45,11 @@ where sample_ids.txt is a file with one sample name per line. This should take a
 
 ### SNP Chip arm
 
-As the SNP chip arm doesn't depend on the exome data, let's run it while we wait for the GATK pipeline results. I __strongly__ advise you to look at the [PennCNV documentation](http://penncnv.openbioinformatics.org/en/latest/user-guide/input/) to figure out how to prepare your input files. 
+As the SNP chip arm doesn't depend on the exome data, let's run it while we wait for the GATK pipeline results. 
+
+#### 1. Prepare files
+
+I __strongly__ advise you to look at the [PennCNV documentation](http://penncnv.openbioinformatics.org/en/latest/user-guide/input/) to figure out how to prepare your input files. 
 
 In my case, we used Illumina's InfiniumExome-24_v1.0 chips. So, I used GenomeStudio (free to [download](https://support.illumina.com/array/array_software/genomestudio/downloads.html), but it does require Windows) to export a Final Report with the columns we need `(SNP Name, Sample ID, Allele1 - Top, Allele2 - Top, GC Score, Log R Ratio, B Allele Freq.)`. 
 
@@ -67,5 +71,14 @@ split_illumina_report.pl -prefix InfiniumExome/ newBox226_FinalReport.txt
 We then have to download PFB files from [Illumina's website](https://support.illumina.com/array/downloads.html). They don't have those exact files there, but all we're looking for is the Population Frequency of B Allele, which is calculated in their MAF files. We just need to extract the column that corresponds to our population. In my case, I'll get [this](ftp://webdata:webdata@ussd-ftp.illumina.com/Downloads/ProductFiles/HumanExome/ProductSupportFiles/HumanExome-12v1-2_A_MAF.txt) and [this](https://support.illumina.com/content/dam/illumina-support/documents/downloads/productfiles/infinium-exome-24/infinium-exome-24-v1-0-a1-population-reports-maf-copy-numbers.zip). So, to make our PFB files, we need:
 
 ```bash
+# get the first 4 columns, and ignore the first line
+cut -f 1,2,3,4 HumanExome-12v1-2_A_MAF.txt | tail -n +2 > HumanExome.pfb
+cut -f 1,2,3,4 Population\ Reports\ \(MAF\,\ Copy\ Numbers\)/InfiniumExome-24v1-0_A1_PopulationReport_MAF.txt | tail -n +2 > InfiniumExome.pfb
+```
 
+I'm going to use the default HMM parameters, but feel free to play with them if you want to increase/decrease sensitivity and specificity. Finally, I also created a GC content file to test the corrections implemented in PennCNV. There's a simple script to do it, but you'll likely need to change it to fit your needs. Also, __this takes a few hours__ to run, so use it wisely.
+
+```bash
+bash ~/autodenovo/penncnv_create_gcmodel.sh HumanExome.pfb /fdb/igenomes/Homo_sapiens/UCSC/hg19/Sequence/WholeGenomeFasta/genome.fa HumanExome.h19.gcmodel
+bash ~/autodenovo/penncnv_create_gcmodel.sh InfiniumExome.pfb /fdb/igenomes/Homo_sapiens/UCSC/hg19/Sequence/WholeGenomeFasta/genome.fa InfiniumExome.h19.gcmodel
 ```
