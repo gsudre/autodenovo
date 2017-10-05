@@ -93,7 +93,7 @@ Now that all files are ready, there's a handy script to run PennCNV to find deno
 for t in `ls -1 *trio*ped | sed -e 's/\.ped//'`; do 
    bash ~/autodenovo/penncnv_run_trio.sh $t InfiniumExome.pfb InfiniumExome.hg19.gcmodel;
 done
-# redo it for the sample in a different box
+# redo it for the family in a different box
 for t in `ls -1 10369_trio*ped | sed -e 's/\.ped//'`; do 
    bash ~/autodenovo/penncnv_run_trio.sh $t HumanExome.pfb HumanExome.hg19.gcmodel;
 end
