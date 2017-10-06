@@ -45,6 +45,16 @@ swarm -f swarm.single -t 16 -g 55 --job-name gatk_single --logdir trash --time=4
 
 where sample_ids.txt is a file with one sample name per line. This should take about 1-2 days to run per participant, so there's the beauty of running them all in parallel.
 
+We can check which samples didn't finish properly:
+
+```bash
+while read s; do if [ ! -e VCF/${s}/${s}.g.vcf.idx ]; then echo $s; fi; done < sample_ids.txt
+```
+
+And then go through the logs to see why/where they failed.
+
+
+
 ### SNP Chip arm
 
 As the SNP chip arm doesn't depend on the exome data, let's run it while we wait for the GATK pipeline results. 
