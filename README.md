@@ -179,4 +179,32 @@ Assuming that all our trios have been coded as FAMID_trioX.ped, as above.
 
 #### 3. Parse de novo CNVs
 
-The last step is to figure out which CNVs are de novo in each trio.
+The last step is to figure out which CNVs are de novo in each trio. That's simply the CNVs in the offspring that are not in the parents:
+
+```bash
+for trio in `ls -1 *trio*ped | sed -e 's/\.ped//'`; do
+   echo $trio >> penncnv_results.txt
+   grep mother penncnv/results/${trio}.triocnv > mom_snps;
+   grep father penncnv/results/${trio}.triocnv > dad_snps;
+   cat mom_snps dad_snps > parent_snps;
+   for snp in `grep offspring penncnv/results/${trio}.triocnv | cut -d' ' -f 1`; do 
+      if ! grep -q $snp parent_snps; then
+         echo "De Novo CNV: $snp" >> penncnv_results.txt
+      fi;
+   done
+   rm *_snps;
+done
+
+for trio in `ls -1 *trio*ped | sed -e 's/\.ped//'`; do
+   echo $trio >> penncnv_adjusted_results.txt
+   grep mother penncnv/results/${trio}.adjusted.triocnv > mom_snps;
+   grep father penncnv/results/${trio}.adjusted.triocnv > dad_snps;
+   cat mom_snps dad_snps > parent_snps;
+   for snp in `grep offspring penncnv/results/${trio}.adjusted.triocnv | cut -d' ' -f 1`; do 
+      if ! grep -q $snp parent_snps; then
+         echo "De Novo CNV: $snp" >> penncnv_adjusted_results.txt
+      fi;
+   done
+   rm *_snps;
+done
+```
