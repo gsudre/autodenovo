@@ -3,8 +3,8 @@
 
 id=$1
 window=$2
-out_dir='/data/NCR_SBRB/big_fake_simplex/cnvnator'
-bam_file="/data/NCR_SBRB/big_fake_simplex/BAM/${id}/${id}_sorted_RG_markduplicate_recalibrated.bam"
+out_dir='/data/NCR_SBRB/simplex/cnvnator'
+bam_file="/data/NCR_SBRB/simplex/BAM/${id}/${id}_sorted_RG_markduplicate_recalibrated.bam"
 ref_dir='/fdb/igenomes/Homo_sapiens/UCSC/hg19/Sequence/Chromosomes'
 
 cd /lscratch/$SLURM_JOBID

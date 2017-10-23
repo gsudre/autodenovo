@@ -2,11 +2,11 @@
 # Runs the full CNVkit pipeline
 id=$1
 w=$2
-exome_targets='/data/NCR_SBRB/fake_trios/SeqCapEZ_Exome_v3.0_Design_Annotation_files/SeqCap_EZ_Exome_v3_hg19_capture_targets.bed' 
+exome_targets='/data/NCR_SBRB/simplex/SeqCapEZ_Exome_v3.0_Design_Annotation_files/SeqCap_EZ_Exome_v3_hg19_capture_targets.bed' 
 ref_fa='/fdb/igenomes/Homo_sapiens/UCSC/hg19/Sequence/WholeGenomeFasta/genome.fa'
-out_dir='/data/NCR_SBRB/big_fake_simplex/cnvkit'
+out_dir='/data/NCR_SBRB/simplex/cnvkit'
 tmp_dir="/lscratch/$SLURM_JOBID"
-bam_dir='/data/NCR_SBRB/big_fake_simplex/BAM'
+bam_dir='/data/NCR_SBRB/simplex/BAM'
 bam_name="${id}_sorted_RG_markduplicate_recalibrated"
 ncpu=6
 

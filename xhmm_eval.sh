@@ -1,9 +1,9 @@
 #~/bin/bash
 # Evaluate the rest of XHMM< after running DepthOfCoverage
-exome_targets='/data/NCR_SBRB/fake_trios/SeqCapEZ_Exome_v3.0_Design_Annotation_files/SeqCap_EZ_Exome_v3_hg19_capture_targets.bed' 
+exome_targets='/data/NCR_SBRB/simplex/SeqCapEZ_Exome_v3.0_Design_Annotation_files/SeqCap_EZ_Exome_v3_hg19_capture_targets.bed' 
 gatk_memory="50g"
 ref_fa='/fdb/GATK_resource_bundle/hg19-2.8/ucsc.hg19.fasta'
-out_dir='/data/NCR_SBRB/big_fake_simplex/xhmm'
+out_dir='/data/NCR_SBRB/simplex/xhmm'
 
 cd $out_dir
 module load GATK

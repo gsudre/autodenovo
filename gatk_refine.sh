@@ -10,7 +10,7 @@ id=$1
 gatk_memory="50g"
 ref_fa="/fdb/igenomes/Homo_sapiens/UCSC/hg19/Sequence/WholeGenomeFasta/genome.fa"
 hg19_known_snps="/fdb/GATK_resource_bundle/b37/1000G_phase3_v4_20130502.sites.vcf.gz"
-home_directory="/data/NCR_SBRB/big_fake_simplex"
+home_directory="/data/NCR_SBRB/simplex"
 vcf_directory="${home_directory}/VCF"
 my_gc_threads=$(($SLURM_CPUS_PER_TASK-1))
 

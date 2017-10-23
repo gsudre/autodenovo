@@ -12,7 +12,7 @@ my_gc_threads=$(($SLURM_CPUS_PER_TASK-1))
 ref_fa="/fdb/igenomes/Homo_sapiens/UCSC/hg19/Sequence/WholeGenomeFasta/genome.fa"
 gatk_files="/fdb/GATK_resource_bundle/hg19"
 
-home_directory="/data/NCR_SBRB/big_fake_simplex"
+home_directory="/data/NCR_SBRB/simplex"
 vcf_directory="${home_directory}/VCF"
 annovar_directory="${home_directory}/ANNOVAR"
 
