@@ -34,7 +34,7 @@ The SNP Chip pipeline can be run in paralle with the other two, but SNV and CNV 
 
 ### CNV and SNV arms
 
-#### 1. Run GATK pipeline script to do variant calling for single samples
+#### Run GATK pipeline script to do variant calling for single samples
 
 First, modify the script gatk_upToSingleCalls.sh to reflect your environment. This script runs the GATK pipeline up to calls for the single sample. It takes the sample name, assuming all variables are properly set. I highly recommend running it in a computer cluster. In my case, we have a cluster running SLURM, so I swarm the jobs this way:
 
@@ -44,6 +44,82 @@ swarm -f swarm.single -t 16 -g 55 --job-name gatk_single --logdir trash --time=4
 ```
 
 where sample_ids.txt is a file with one sample name per line. This should take about 1-2 days to run per participant, so there's the beauty of running them all in parallel.
+
+We can check which samples didn't finish properly:
+
+```bash
+while read s; do if [ ! -e VCF/${s}/${s}.g.vcf.idx ]; then echo $s; fi; done < sample_ids.txt
+```
+
+And then go through the logs to see why/where they failed.
+
+#### SNV arm
+
+#### 1. Joint calling
+
+All tools in the SNV arm need VCF files, preferably joint called. So, we run the second stage of the GATK Best practices pipeline, in which we perform joint calling:
+
+```bash
+bash ~/autodenovo/gatk_jointCalling.sh /data/NCR_SBRB/big_fake_simplex/sample_ids.txt
+```
+
+#### CNV arm
+
+After we ran the first part of the GATK Best Practices pipeline (variant calling for single samples), we should have aligned BAMs for all our samples. For this arm, we don't need to wait for the joint calling steps, as we'll be working directly from BAMs. Also, all tools can be run in parallel:
+
+##### XHMM
+
+###### 1. Run Depth of Coverage (DOC)
+```bash
+mkdir xhmm
+while read s; do echo "bash ~/autodenovo/xhmm_get_DOC.sh $s" >> xhmm/swarm.DOC; done < sample_ids.txt
+cd xhmm
+swarm -f swarm.DOC -t 4 -g 55 --job-name xhmmDOC --logdir trash --time=48:00:00 --gres=lscratch:100
+```
+
+###### 2. Run the actual XHMM on the DOC data
+
+This one doens't take very long, so we don't need to swarm it:
+
+```bash
+cp /usr/local/apps/XHMM/2016-01-04/params.txt .
+bash ~/autodenovo/xhmm_eval.sh
+```
+
+##### CNVnator
+
+Autodenovo includes a script to run all steps in CNVnator, so it's quite easy to just try it for a few different window options:
+
+```bash
+mkdir cnvnator
+cd cnvnator
+while read s; do 
+   for w in 30 100 500; do 
+      echo "bash ~/autodenovo/cnvnator_full.sh $s $w" >> swarm.cnvnator;
+   done;
+done < ../sample_ids.txt
+
+swarm -f swarm.cnvnator -t 2 -g 16 --job-name cnvnator --logdir trash -m cnvnator --gres=lscratch:50 --time=48:00:00
+```
+
+##### CNVkit
+
+Running CNVkit is somewhat automated as well. First thing, create the access files for each of the windows you'll be playing with:
+
+```bash
+mkdir cnvkit
+cd cnvkit
+for w in 1 5 10 50 100; do
+   /data/NCR_SBRB/software/cnvkit/cnvkit.py access /fdb/igenomes/Homo_sapiens/UCSC/hg19/Sequence/WholeGenomeFasta/genome.fa -s ${w}000 -o access-${w}kb.hg19.bed;
+done
+```
+
+Now, swarm all samples, for the different windows:
+
+```bash
+while read s; do for w in 1 5 10 50 100; do echo "bash ~/autodenovo/cnvkit_full.sh $s $w" >> swarm.cnvkit; done; done < ../sample_ids.txt
+swarm -f swarm.cnvkit -t 6 -g 16 --job-name cnvkit --logdir trash --time=48:00:00 --gres=lscratch:10
+```
 
 ### SNP Chip arm
 
@@ -103,4 +179,32 @@ Assuming that all our trios have been coded as FAMID_trioX.ped, as above.
 
 #### 3. Parse de novo CNVs
 
-The last step is to figure out which CNVs are de novo in each trio.
+The last step is to figure out which CNVs are de novo in each trio. That's simply the CNVs in the offspring that are not in the parents:
+
+```bash
+for trio in `ls -1 *trio*ped | sed -e 's/\.ped//'`; do
+   echo $trio >> penncnv_results.txt
+   grep mother penncnv/results/${trio}.triocnv > mom_snps;
+   grep father penncnv/results/${trio}.triocnv > dad_snps;
+   cat mom_snps dad_snps > parent_snps;
+   for snp in `grep offspring penncnv/results/${trio}.triocnv | cut -d' ' -f 1`; do 
+      if ! grep -q $snp parent_snps; then
+         echo "De Novo CNV: $snp" >> penncnv_results.txt
+      fi;
+   done
+   rm *_snps;
+done
+
+for trio in `ls -1 *trio*ped | sed -e 's/\.ped//'`; do
+   echo $trio >> penncnv_adjusted_results.txt
+   grep mother penncnv/results/${trio}.adjusted.triocnv > mom_snps;
+   grep father penncnv/results/${trio}.adjusted.triocnv > dad_snps;
+   cat mom_snps dad_snps > parent_snps;
+   for snp in `grep offspring penncnv/results/${trio}.adjusted.triocnv | cut -d' ' -f 1`; do 
+      if ! grep -q $snp parent_snps; then
+         echo "De Novo CNV: $snp" >> penncnv_adjusted_results.txt
+      fi;
+   done
+   rm *_snps;
+done
+```
