@@ -53,9 +53,9 @@ while read s; do if [ ! -e VCF/${s}/${s}.g.vcf.idx ]; then echo $s; fi; done < s
 
 And then go through the logs to see why/where they failed.
 
-#### SNV arm
+### SNV arm
 
-##### 1. Joint calling
+#### 1. Joint calling
 
 All tools in the SNV arm need VCF files, preferably joint called. So, we run the second stage of the GATK Best practices pipeline, in which we perform joint calling:
 
@@ -63,7 +63,7 @@ All tools in the SNV arm need VCF files, preferably joint called. So, we run the
 bash ~/autodenovo/gatk_jointCalling.sh /data/NCR_SBRB/big_fake_simplex/sample_ids.txt
 ```
 
-##### 2. Run different tools
+#### 2. Run different tools
 
 All these tools can be run in parallel, as they only depend on the jointly called VCF. If we don't do any sort of pre-filtering, it's simple:
 
@@ -75,6 +75,14 @@ cd triodenovo
 while read t; do ../../software/triodenovo.0.05/bin/triodenovo --ped ../${t}.ped --in_vcf ../VCF/recalibrated_variants.vcf --out ${t}_denovo.vcf; done < ../trio_ids.txt
 ```
 
+And fix an error in the VCF header:
+
+```bash
+while read t; do
+   sed -e "s/Type\=Denovo\ Quality/Type=Float/g" ${t}_denovo.vcf > ${t}_denovo_v2.vcf
+done < ../trio_ids.txt
+```
+
 ##### DenovoGear
 
 ```bash
@@ -84,7 +92,51 @@ while read t; do
 ../../software/denovogear-v1.1.1-Linux-x86_64/bin/dng dnm auto --ped ../${t}.ped --output_vcf ${t}_dnm.vcf --vcf ../VCF/recalibrated_variants.vcf; done < ../trio_ids.txt
 ```
 
-Now we have one file with results for each trio. 
+#### 3. Compute ensemble calls
+
+Now we have one file with results for each trio, for each tool. Time to ensemble the calls:
+
+```bash
+module load bcbio-nextgen
+ref_fa=/fdb/igenomes/Homo_sapiens/UCSC/hg19/Sequence/WholeGenomeFasta/genome.fa;
+while read t; do
+   echo Ensembling $t  
+   bcbio-variation-recall ensemble --numpass 3 --names GATK,DeNovoGear,TrioDeNovo ${t}_ensemble.vcf $ref_fa gatk_refine/${t}_hiConfDeNovo.vcf dng/${t}_dnm.vcf triodenovo/${t}_denovo_v2.vcf;
+   gunzip ${t}_ensemble.vcf.gz;
+   rm -rf ${t}_ensemble-work ${t}_ensemble.vcf.gz.tbi;
+done < trio_ids.txt
+mkdir snv_arm
+mv *_ensemble.vcf snv_arm
+```
+
+#### 4. Figure out interesting structural variants
+
+In my case, I have nuclear families (parents and siblings) where only one kid is affects. So, I'll look for denovo variants that appear in the affected sibling, but not in the unaffected one(s). Spit those SNVs to a file:
+
+```bash
+cd snv_arm
+for fam in `ls *_trio1_ensemble.vcf | sed -e 's/_trio1_ensemble\.vcf//g' -`; do
+   ntrios=`ls -1 ${fam}_trio?_ensemble.vcf | wc -l`;
+   if [ $ntrios -gt 1 ]; then
+      echo $fam;
+      cut -f 1,2 ${fam}_trio1_ensemble.vcf | grep -v '#' - > ${fam}_possible_snvs.txt;
+      cat ${fam}_trio[2..$ntrios]_ensemble.vcf > ${fam}_control_snvs.txt;
+      while read snv; do
+         if ! grep -q "$snv" ${fam}_control_snvs.txt; then
+            echo $snv >> interesting_snvs.txt;
+         fi;
+      done < ${fam}_possible_snvs.txt;
+   fi;
+done
+```
+
+Finally, count how often each structural variant appears in the file:
+
+```bash
+sort interesting_snvs.txt | uniq -cd
+```
+
+Unfortunately, in my case the most times the SNVs happened were 2, which is not necessarily exciting as I have 21 affected families. One option is to make filters less conservative, or require only 2 or 1 tools to call the variant. So, good luck!
 
 ##### GATK refinement
 
@@ -95,13 +147,13 @@ while read s; do echo "bash ~/autodenovo/gatk_refine.sh $s" >> swarm.refine; don
 swarm -f swarm.refine -t 2 -g 55 --job-name gatkr --logdir trash --time=48:00:00 --gres=lscratch:100
 ```
 
-#### CNV arm
+### CNV arm
 
 After we ran the first part of the GATK Best Practices pipeline (variant calling for single samples), we should have aligned BAMs for all our samples. For this arm, we don't need to wait for the joint calling steps, as we'll be working directly from BAMs. Also, all tools can be run in parallel:
 
-##### XHMM
+#### XHMM
 
-###### 1. Run Depth of Coverage (DOC)
+##### 1. Run Depth of Coverage (DOC)
 ```bash
 mkdir xhmm
 while read s; do echo "bash ~/autodenovo/xhmm_get_DOC.sh $s" >> xhmm/swarm.DOC; done < sample_ids.txt
@@ -109,7 +161,7 @@ cd xhmm
 swarm -f swarm.DOC -t 4 -g 55 --job-name xhmmDOC --logdir trash --time=48:00:00 --gres=lscratch:100
 ```
 
-###### 2. Run the actual XHMM on the DOC data
+##### 2. Run the actual XHMM on the DOC data
 
 This one doens't take very long, so we don't need to swarm it:
 
@@ -118,7 +170,7 @@ cp /usr/local/apps/XHMM/2016-01-04/params.txt .
 bash ~/autodenovo/xhmm_eval.sh
 ```
 
-##### CNVnator
+#### CNVnator
 
 Autodenovo includes a script to run all steps in CNVnator, so it's quite easy to just try it for a few different window options:
 
@@ -134,7 +186,7 @@ done < ../sample_ids.txt
 swarm -f swarm.cnvnator -t 2 -g 16 --job-name cnvnator --logdir trash -m cnvnator --gres=lscratch:50 --time=48:00:00
 ```
 
-##### CNVkit
+#### CNVkit
 
 Running CNVkit is somewhat automated as well. First thing, create the access files for each of the windows you'll be playing with:
 
