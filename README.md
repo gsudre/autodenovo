@@ -55,12 +55,44 @@ And then go through the logs to see why/where they failed.
 
 #### SNV arm
 
-#### 1. Joint calling
+##### 1. Joint calling
 
 All tools in the SNV arm need VCF files, preferably joint called. So, we run the second stage of the GATK Best practices pipeline, in which we perform joint calling:
 
 ```bash
 bash ~/autodenovo/gatk_jointCalling.sh /data/NCR_SBRB/big_fake_simplex/sample_ids.txt
+```
+
+##### 2. Run different tools
+
+All these tools can be run in parallel, as they only depend on the jointly called VCF. If we don't do any sort of pre-filtering, it's simple:
+
+##### Triodenovo
+
+```bash
+mkdir triodenovo
+cd triodenovo
+while read t; do ../../software/triodenovo.0.05/bin/triodenovo --ped ../${t}.ped --in_vcf ../VCF/recalibrated_variants.vcf --out ${t}_denovo.vcf; done < ../trio_ids.txt
+```
+
+##### DenovoGear
+
+```bash
+mkdir dng
+cd dng
+while read t; do 
+../../software/denovogear-v1.1.1-Linux-x86_64/bin/dng dnm auto --ped ../${t}.ped --output_vcf ${t}_dnm.vcf --vcf ../VCF/recalibrated_variants.vcf; done < ../trio_ids.txt
+```
+
+Now we have one file with results for each trio. 
+
+##### GATK refinement
+
+This takes a while, so we swarm it:
+
+```bash
+while read s; do echo "bash ~/autodenovo/gatk_refine.sh $s" >> swarm.refine; done < trio_ids.txt
+swarm -f swarm.refine -t 2 -g 55 --job-name gatkr --logdir trash --time=48:00:00 --gres=lscratch:100
 ```
 
 #### CNV arm
