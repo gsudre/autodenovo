@@ -1,0 +1,121 @@
+---
+title: "De Novo SNV analysis"
+output: html_notebook
+---
+
+Let's do some statistical analysis on the trios we have. Instead of starting with the consensus data, let's start with GATK DN calls, because I don't know off-hand what the intersect of calls will be, so there might not be much consensus at all. We can always redo this for each of the 3 tools in the SNV arm.
+
+Let's first figure out all possible SNVs called as DN in the affected trios, but not in the unaffected ones. 
+
+*Not sure why this code is not running within the notebook... I'm running it in the terminal instead*
+
+```{bash}
+suffix=hiConfDeNovo.vcf
+cd ~/data/simplex/gatk_refine
+rm interesting_snvs.txt
+ls -1 *_trio1_${suffix} > famids.txt
+sed -i '' "s/_trio1_${suffix}//g" famids.txt
+cat famids.txt
+# for each family ID
+while read fam; do
+  # figure out how many trios we have
+   ntrios=`ls -1 ${fam}_trio?_${suffix} | wc -l`;
+   ntrios=$(($ntrios))
+   echo $fam;
+   echo $ntrios
+   # if we have more than one (assuming the first one is affected)
+   if [ $ntrios -gt 1 ]; then
+      # get all SNVs in the affected trio in the family
+      cut -f 1,2 ${fam}_trio1_${suffix} | grep -v '#' - > ${fam}_possible_snvs.txt;
+      # combine the vcf files of all unnafected trios
+      cat ${fam}_trio[2..$ntrios]_${suffix} > ${fam}_control_snvs.txt;
+      # for each possible SNV in affected trio, mark it as interesting if it's not
+      # in the unnafected trios
+      while read snv; do
+         if ! grep -q "$snv" ${fam}_control_snvs.txt; then
+            echo $snv >> interesting_snvs.txt;
+         fi;
+      done < ${fam}_possible_snvs.txt;
+   fi;
+done < famids.txt
+```
+
+How often do we get those interesting SNVs?
+
+```{r}
+a = read.table('~/data/simplex/gatk_refine/interesting_snvs.txt')
+snps = apply(a, 1, function(x) sprintf('%s:%s', x[1], x[2]))
+nmax = max(table(snps))
+ntotal = length(unique(snps))
+print(sprintf('%d out of the %d SNPs happen %d times', sum(table(snps)==nmax),
+                                                       ntotal, nmax))
+gatk_snps = unique(snps)[table(snps)==nmax]
+print(gatk_snps)
+```
+
+So, 2 out of 21 trios is not great. Let's see what we get using triodenovo:
+
+```{r}
+a = read.table('~/data/simplex/triodenovo/interesting_snvs.txt')
+snps = apply(a, 1, function(x) sprintf('%s:%s', x[1], x[2]))
+nmax = max(table(snps))
+ntotal = length(unique(snps))
+print(sprintf('%d out of the %d SNPs happen %d times', sum(table(snps)==nmax),
+                                                       ntotal, nmax))
+tdn_snps = unique(snps)[table(snps)==nmax]
+print(tdn_snps)
+```
+
+How about DeNovoGear?
+
+```{r}
+a = read.table('~/data/simplex/dng/interesting_snvs.txt')
+snps = apply(a, 1, function(x) sprintf('%s:%s', x[1], x[2]))
+nmax = max(table(snps))
+ntotal = length(unique(snps))
+print(sprintf('%d out of the %d SNPs happen %d times', sum(table(snps)==nmax),
+                                                       ntotal, nmax))
+dng_snps = unique(snps)[table(snps)==nmax]
+print(dng_snps)
+```
+
+The numbers are not great, but we still need to check how significant they are. First, is there any overlap?
+
+```{r}
+intersect(dng_snps, tdn_snps)
+intersect(dng_snps, gatk_snps)
+intersect(tdn_snps, gatk_snps)
+```
+
+Not really... which is weird, as I do get some overlapping results if I compute the overlaps first, before computing the interesting variables. 
+
+In any case, let's run some nonparametric tests. Say I have nsnps unique snps, and I'll pick 21 of them (with replacement). How often do I pick the same SNP X times?
+
+```{r}
+do_perms = function(nsnps, noften, nboot=10000, npicks=21) {
+  success = 0
+  for (i in 1:nboot) {
+      picks = sample(1:nsnps, npicks, replace = T)
+      nmax = max(table(picks))
+      if (nmax >= noften) {
+        success = success + 1
+      }
+  }
+  return(success/nboot)
+}
+```
+
+So, for our results in each tool:
+
+```{r}
+print(sprintf('GATK refine: %.4f', do_perms(3388, 2)))
+print(sprintf('Triodenovo: %.4f', do_perms(18802, 5)))
+print(sprintf('DeNovoGear: %.4f', do_perms(20901, 6)))
+
+```
+
+So, while the GATK results could be by chance, the ones with the two other tools are not. Now we just need to check why there's no overlap in the results, check for plausible biological links, and if any of these SNPs co-occur with each other.
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file).
