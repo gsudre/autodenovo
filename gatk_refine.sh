@@ -33,5 +33,6 @@ GATK -m ${gatk_memory} VariantFiltration -R ${ref_fa} -V recalibrated_variants.$
 GATK -m ${gatk_memory} VariantAnnotator -R ${ref_fa} -V recalibrated_variants.${trio_name}.Gfiltered.vcf -A PossibleDeNovo -ped ${trio_fname} -pedValidationType SILENT -o recalibrated_variants.${trio_name}.Gfiltered.deNovos.vcf
 
 # Finally filter the high confidence calls
-grep '#' recalibrated_variants.${trio_name}.Gfiltered.deNovos.vcf > ${trio_name}_hiConfDeNovo.vcf
-grep hiConfDeNovo recalibrated_variants.${trio_name}.Gfiltered.deNovos.vcf >> ${trio_name}_hiConfDeNovo.vcf
+mkdir ../gatk_refine
+grep '#' recalibrated_variants.${trio_name}.Gfiltered.deNovos.vcf > ../gatk_refine/${trio_name}_hiConfDeNovo.vcf
+grep hiConfDeNovo recalibrated_variants.${trio_name}.Gfiltered.deNovos.vcf >> ../gatk_refine/${trio_name}_hiConfDeNovo.vcf
