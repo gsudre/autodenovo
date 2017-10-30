@@ -92,6 +92,20 @@ while read t; do
 ../../software/denovogear-v1.1.1-Linux-x86_64/bin/dng dnm auto --ped ../${t}.ped --output_vcf ${t}_dnm.vcf --vcf ../VCF/recalibrated_variants.vcf; done < ../trio_ids.txt
 ```
 
+##### GATK Refine
+
+```bash
+while read s; do echo "bash ~/autodenovo/gatk_refine.sh $s" >> swarm.refine; done < trio_ids.txt
+swarm -f swarm.refine -t 2 -g 55 --job-name gatkr --logdir trash --time=48:00:00 --gres=lscratch:100
+```
+
+And, if we also want to create unfiltered calls to better compare with the other tools, after the processed from above finish running we do:
+
+```bash
+while read s; do echo "bash ~/autodenovo/gatk_refine_noFilter.sh $s" >> swarm.refineNF; done < trio_ids.txt
+swarm -f swarm.refineNF -t 2 -g 55 --job-name gatkr --logdir trash --time=48:00:00 --gres=lscratch:100
+```
+
 #### 3. Compute ensemble calls
 
 Now we have one file with results for each trio, for each tool. Time to ensemble the calls:
