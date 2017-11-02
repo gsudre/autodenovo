@@ -36,3 +36,5 @@ GATK -m ${gatk_memory} VariantAnnotator -R ${ref_fa} -V recalibrated_variants.${
 mkdir ../gatk_refine
 grep '#' recalibrated_variants.${trio_name}.Gfiltered.deNovos.vcf > ../gatk_refine/${trio_name}_hiConfDeNovo.vcf
 grep hiConfDeNovo recalibrated_variants.${trio_name}.Gfiltered.deNovos.vcf >> ../gatk_refine/${trio_name}_hiConfDeNovo.vcf
+grep '#' recalibrated_variants.${trio_name}.Gfiltered.deNovos.vcf > ../gatk_refine/${trio_name}_allDeNovo.vcf
+grep DeNovo recalibrated_variants.${trio_name}.Gfiltered.deNovos.vcf >> ../gatk_refine/${trio_name}_allDeNovo.vcf

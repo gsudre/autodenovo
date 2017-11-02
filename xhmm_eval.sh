@@ -49,3 +49,4 @@ xhmm --matrix -r ./DATA.RD.txt \
 
 xhmm --discover -p params.txt -r ./DATA.PCA_normalized.filtered.sample_zscores.RD.txt -R ./DATA.same_filtered.RD.txt -c ./DATA.xcnv -a ./DATA.aux_xcnv -s ./DATA
 
+xhmm --genotype -p params.txt -r ./DATA.PCA_normalized.filtered.sample_zscores.RD.txt -R ./DATA.same_filtered.RD.txt -g ./DATA.xcnv -F $ref_fa -v ./DATA.vcf
