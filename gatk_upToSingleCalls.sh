@@ -13,21 +13,20 @@ bwa_fa_index="/fdb/igenomes/Homo_sapiens/UCSC/hg19/Sequence/BWAIndex/genome.fa"
 samtools_sort_memory="118G"
 java_memory="-Xmx118g"
 gatk_memory="118g"
-my_gc_threads=10 #$(($SLURM_CPUS_PER_TASK-1))
+my_gc_threads=$(($SLURM_CPUS_PER_TASK-1))
 ref_fa="/fdb/igenomes/Homo_sapiens/UCSC/hg19/Sequence/WholeGenomeFasta/genome.fa"
+hg19_known_snps="/fdb/GATK_resource_bundle/hg19-2.8/dbsnp_138.hg19.vcf.gz"
+hg19_known_indels="/fdb/GATK_resource_bundle/hg19-2.8/Mills_and_1000G_gold_standard.indels.hg19.vcf.gz"
 
 home_directory="/data/NCR_SBRB/simplex"
 fastq_directory="${home_directory}/FASTQ"
-nisc_bam_directory="/data/NCR_SBRB/ADHDQTL/NISC/SampleBams"
+nisc_bam_directory="/data/NCR_SBRB/simplex/original_bams"
 qc_top_directory="${home_directory}/QC"
 qc_this_sample_directory="${qc_top_directory}/${id}"
 qc_this_sample_R1_directory="${qc_this_sample_directory}/R1"
 qc_this_sample_R2_directory="${qc_this_sample_directory}/R2"
 bam_directory="${home_directory}/BAM"
 bam_this_sample_directory="${bam_directory}/${id}"
-vcf_directory="${home_directory}/VCF"
-vcf_this_sample_directory="${vcf_directory}/${id}"
-annovar_directory="${home_directory}/ANNOVAR"
 
 java_memory="-Xmx118g"
 nisc_bam="${nisc_bam_directory}/${id}.bam"
@@ -40,7 +39,7 @@ fastq_R2="${fastq_directory}/${id}_R2.fastq.gz"
 module load picard/2.9.2
 module load fastqc/0.11.5
 module load bwa/0.7.15
-module load samtools/1.6
+module load samtools/1.5
 module load GATK/3.8-0
 module load bbtools/37.36
 
