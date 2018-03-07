@@ -5,7 +5,7 @@ exome_targets='/data/NCR_SBRB/simplex/SeqCapEZ_Exome_v3.0_Design_Annotation_file
 gatk_memory="50g"
 ref_fa='/fdb/GATK_resource_bundle/hg19-2.8/ucsc.hg19.fasta'
 bam_dir='/data/NCR_SBRB/simplex/BAM'
-out_dir='/data/NCR_SBRB/simplex/xhmm'
+out_dir='/data/sudregp/cnv/xhmm'
 
 cd $out_dir
 module load GATK
