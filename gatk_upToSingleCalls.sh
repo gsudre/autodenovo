@@ -55,8 +55,9 @@ cd ..
 ###########
 ###bbduk###
 ###########
-bbtools bbduk threads=1 in=${fastq_R1} in2=${fastq_R2} out=${fastq_directory}/${id}_tbo_R1.fastq.gz out2=${fastq_directory}/${id}_tbo_R2.fastq.gz tbo overwrite=true
-bbtools bbduk threads=1 in=${fastq_directory}/${id}_tbo_R1.fastq.gz in2=${fastq_directory}/${id}_tbo_R2.fastq.gz out=${fastq_directory}/${id}_bbduk_R1.fastq.gz out2=${fastq_directory}/${id}_bbduk_R2.fastq.gz ref=/data/NCR_SBRB/ADHDQTL/SCRIPTS/BASH/adapters.u.i.fa k=21 hdist=1 qtrim=rl trimq=19 minlen=30 overwrite=true
+bbtools bbduk threads=1 in=${fastq_R1} in2=${fastq_R2} out=${fastq_directory}/${id}_tbo_ktl15_ir_uf3_R1.fastq.gz out2=${fastq_directory}/${id}_tbo_ktl15_ir_uf3_R2.fastq.gz ref=/data/NCR_SBRB/ADHDQTL/SCRIPTS/BASH/truseq_i_15bp_rev_3_u_fwd_3.fa tbo ktrim=l k=15 restrictleft=40 mm=f rcomp=f overwrite=true
+
+bbtools bbduk threads=1 in=${fastq_directory}/${id}_tbo_ktl15_ir_uf3_R1.fastq.gz in2=${fastq_directory}/${id}_tbo_ktl15_ir_uf3_R2.fastq.gz out=${fastq_directory}/${id}_bbduk_R1.fastq.gz out2=${fastq_directory}/${id}_bbduk_R2.fastq.gz ref=/data/NCR_SBRB/ADHDQTL/SCRIPTS/BASH/adapters.u.i.fa k=21 hdist=1 ftl=14 qtrim=rl trimq=19 minlen=30 overwrite=true
 
 ############
 ###FASTQC###
